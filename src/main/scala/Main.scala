@@ -175,6 +175,7 @@ object Main {
       (part1,value1,part2,value2,part3,value3,num,score)
     }).repartition(1).filter(x =>x._2>0.0 &&x._4>0.0 && x._6>0.0).saveAsTextFile("/app/user/data/deeplearning/results/triangleVertices/withV5Variance3")
   }
+
   def triangle(graph: Graph[Int,Long]):RDD[String]={
     val results =NewTriangleCount.run(graph).vertices.map(x =>{
       val sb = new StringBuilder()

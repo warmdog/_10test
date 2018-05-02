@@ -1,5 +1,6 @@
 
 
+import App_Process.{android, v5file}
 import com.huaban.analysis.jieba.JiebaSegmenter
 import com.huaban.analysis.jieba.JiebaSegmenter.SegMode
 import org.apache.spark.sql.types.StructType
@@ -9,6 +10,7 @@ import scopt.OptionParser
 object TextProcess {
   //__label__affairs
   val v5file = "/app/user/data/deeplearning/results/TextProcess/train_data_with_v5.csv"
+  val android = "/app/user/data/deeplearning/results/TextProcess/android-7-12.csv"
   case class Params(times :Long= 1000*60*60*2)
   def main(args: Array[String]): Unit = {
     val defaultParams = Params()
@@ -18,7 +20,10 @@ object TextProcess {
     }
     val config = parser.parse(args, defaultParams)
     val spark = SparkSession.builder().appName("Text Process").getOrCreate()
-    val v5 = spark.read.format("csv").option("header","true").load(v5file)
+    val v5F = spark.read.format("csv").option("header","true").load(v5file)
+    val androidData = spark.read.format("csv").option("delimiter", "\t").option("header","true").load(android)
+    //seq 可以避免重复的列名
+    val v5 = androidData.join(v5F,Seq("uuid","applied_at"))
     //v5.columns
     import spark.implicits._
 
@@ -56,17 +61,17 @@ object TextProcess {
       val resp =x.getString(4)
       (uuid,(applied_at,resp))
     })filter(x => !x._2._2.isEmpty &&( x._2._2 != "NaN"))
+
     import java.text.SimpleDateFormat
     object Time{
-
       def formatDate(s:String):Long = {
         val  dateFormat:SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         dateFormat.parse(s).getTime()
       }
-
     }
+
     val V5res =v5_train_rdd.join(smsRow).filter(x =>{
-      if((Time.formatDate(x._2._2._2) - Time.formatDate(x._2._1._1))<0){
+      if((Time.formatDate(x._2._2._2) - Time.formatDate(x._2._1._1))<config.get.times){
         true
       }else{
         false
@@ -108,6 +113,7 @@ object TextProcess {
       x._1 + "," + applied_at + ", "+fenciLabel
       //fenciLabel
     })
+
     val res_predict2 =v5_predict2.join(smsRow).filter(x =>{
       if((Time.formatDate(x._2._2._2) - Time.formatDate(x._2._1._1))<config.get.times){
         true

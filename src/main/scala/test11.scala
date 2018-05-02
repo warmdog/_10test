@@ -9,12 +9,12 @@ object test11 {
     val tes = Map[String,Int]()
     //import sparkSession.implicits._
     val sc = new SparkContext("local","wordcount",conf)
-    val s  =List("你好兄弟是个上地的大傻比真的会分次吗" ,".toString")
+    var s  =List("你好兄弟是个上地的大傻比真的会分次吗" ,".toString")
     sc.parallelize(s).map(x =>{
       var str = if (x.length>0) new JiebaSegmenter().sentenceProcess(x)
       str
       11+str.toString.replaceAll(","," ")+"dwdwdwd"
-    }).repartition(1).saveAsTextFile("E:\\test")
+    }).repartition(1).saveAsTextFile("E:\\test1")
      // #if( s.contains(x)  )  print(ss)
 
   }

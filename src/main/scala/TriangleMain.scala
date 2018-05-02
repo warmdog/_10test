@@ -143,7 +143,6 @@ object TriangleMain{
     }).repartition(1).saveAsTextFile("/app/user/data/deeplearning/results/triangleVertices/count")
   }
   def triangle(graph: Graph[Int,Long]):Unit={
-
     NewTriangleCount.run(graph).vertices.map(x =>{
       val sb = new StringBuilder()
       try{
